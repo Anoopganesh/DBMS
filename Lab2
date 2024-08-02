@@ -1,0 +1,91 @@
+#1 List the distributor with most installations in domestic places
+
+SELECT
+    v.name AS distributor_name,
+    COUNT(i.panel_no) AS total_domestic_installations
+FROM
+    Install i
+JOIN
+    Vendor v ON i.tin = v.TIN
+WHERE
+    i.install_type = 'domestic'
+GROUP BY
+    v.name
+ORDER BY
+    total_domestic_installations DESC
+LIMIT 1;
+
+# b) List the place name with highest capacity panel installed
+
+SELECT
+    u.address AS place_name,
+    MAX(i.capacity) AS highest_capacity
+FROM
+    Install i
+JOIN
+    User u ON i.user_id = u.user_id
+GROUP BY
+    u.address
+ORDER BY
+    highest_capacity DESC
+LIMIT 1;
+
+
+# c) Display the area where monocrystalline panels are installed
+
+SELECT DISTINCT
+    u.address AS area_name
+FROM
+    Install i
+JOIN
+    Panel p ON i.panel_no = p.panel_no
+JOIN
+    User u ON i.user_id = u.user_id
+WHERE
+    p.pv_type = 'mono';
+    
+# d) For the specific area display the total installation charges for both type of PV modules 
+
+SELECT
+    p.pv_type,
+    SUM(i.install_charges) AS total_installation_charges
+FROM
+    Install i
+JOIN
+    Panel p ON i.panel_no = p.panel_no
+JOIN
+    User u ON i.user_id = u.user_id
+WHERE
+    u.address = 'Jayanagar'
+GROUP BY
+    p.pv_type;
+    
+# List the details of distributors and panel that is the oldest installation
+SELECT
+    v.name AS distributor_name,
+    p.panel_no,
+    p.pv_type,
+    i.install_date,
+    i.install_charges
+FROM
+    Install i
+JOIN
+    Panel p ON i.panel_no = p.panel_no
+JOIN
+    Vendor v ON i.tin = v.TIN
+WHERE
+    i.install_date = (SELECT MIN(install_date) FROM Install);
+    
+
+# f) Find the average sales of both type of panels in only commercial places    
+SELECT
+p.pv_type,
+AVG(i.install_charges) AS average_sales
+FROM
+    Install i
+JOIN
+    Panel p ON i.panel_no = p.panel_no
+WHERE
+    i.install_type = 'commercial'
+GROUP BY
+    p.pv_type;
